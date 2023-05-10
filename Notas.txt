@@ -1,0 +1,7 @@
+objetivo de uma API: prover e manipular informações de uma base de dados
+
+npm init -y 
+pasta package.json
+
+npm install express --save
+pasta package-lock.json e node_modules
