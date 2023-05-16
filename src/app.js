@@ -2,6 +2,8 @@
 import express from 'express';
 //criando uma instancia do express no app
 const app = express();
+//express tem que fazer a leitura do json caso esteja no corpo de uma requisição
+app.use(express.json());
 
 //mock
 const selecoes = [
@@ -18,6 +20,12 @@ app.get('/', (req, res) => {
 
 app.get('/selecoes', (req, res) => {
     res.status(200).send(selecoes);
+});
+
+app.post('/selecoes', (req, res) => {
+    selecoes.push(req.body);
+    // 201 - sucesso na criação
+    res.status(201).send('Seleção cadastrada com sucesso');
 });
 
 //exportando a constante 
