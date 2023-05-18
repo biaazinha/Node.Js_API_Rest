@@ -9,9 +9,19 @@ app.use(express.json());
 const selecoes = [
     {id: 1, selecao: 'Brasil', grupo: 'G'},
     {id: 2, selecao: 'Suiça', grupo: 'G'},
-    {id: 3, selecao: 'Sérvia', grupo: 'G'},
-    {id: 4, selecao: 'Camarões', grupo: 'G'},
+    {id: 3, selecao: 'Camarões', grupo: 'G'},
+    {id: 4, selecao: 'Sérvia', grupo: 'G'},
 ]
+
+function buscarSelecaoPorId(id){
+    // retornar da seleções os dados filtrados - retornar o objeto por id
+    return selecoes.filter(selecao => selecao.id == id)
+}
+
+function BuscaIndexSelecao(id){
+    // pegar a posição ou index do elemento no array por id
+    return selecoes.findIndex(selecao => selecao.id == id)
+}
 
 //criar rota padrão ou raiz - GET
 app.get('/', (req, res) => {
@@ -22,11 +32,21 @@ app.get('/selecoes', (req, res) => {
     res.status(200).send(selecoes);
 });
 
+app.get('/selecoes/:id', (req,res) => {
+    res.json(buscarSelecaoPorId(req.params.id))
+})
+
 app.post('/selecoes', (req, res) => {
     selecoes.push(req.body);
     // 201 - sucesso na criação
     res.status(201).send('Seleção cadastrada com sucesso');
 });
+
+app.delete('/selecoes/:id', (req, res) => {
+    let index = BuscaIndexSelecao(req.params.id)
+    selecoes.splice(index, 1)
+    res.send(`seleção com id ${req.params.id} excuida com sucesso`)
+})
 
 //exportando a constante 
 export default app;
