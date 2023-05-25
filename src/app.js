@@ -1,17 +1,10 @@
-//importar o express 
+//importar
 import express from 'express';
+import conexao from '../infra/conexao.js';
 //criando uma instancia do express no app
 const app = express();
 //express tem que fazer a leitura do json caso esteja no corpo de uma requisição
 app.use(express.json());
-
-//mock
-const selecoes = [
-    {id: 1, selecao: 'Brasil', grupo: 'G'},
-    {id: 2, selecao: 'Suiça', grupo: 'G'},
-    {id: 3, selecao: 'Camarões', grupo: 'G'},
-    {id: 4, selecao: 'Sérvia', grupo: 'G'},
-]
 
 function buscarSelecaoPorId(id){
     // retornar da seleções os dados filtrados - retornar o objeto por id
@@ -25,39 +18,80 @@ function BuscaIndexSelecao(id){
 
 //POST - criar um novo ou adicionar
 app.post('/selecoes', (req, res) => {
-    selecoes.push(req.body);
-    // 201 - sucesso na criação
-    res.status(201).send('Seleção cadastrada com sucesso');
+    const selecao = req.body;
+    const sql = "INSERT INTO selecoes SET?;";
+    conexao.query(sql, selecao, (erro, resultado) => {
+        if(erro) {
+            console.log(erro);
+            //400 - requisição não atendida
+            res.status(400).json({'erro': erro});
+        } else {
+            // 201 - sucesso na criação 
+            res.status(201).json(resultado);
+        }
+    });
 });
 
 //GET - acessar rotas
-//criar rota padrão ou raiz - GET
-app.get('/', (req, res) => {
-    res.send('Hello word!');   //rota padrão de response(resposta)
-});
-
+//Rotas
 app.get('/selecoes', (req, res) => {
-    res.status(200).send(selecoes);
+    const sql = "SELECT * FROM selecoes;";
+    conexao.query(sql, (erro, resultado) => {
+        if(erro) {
+            console.log(erro);
+            //404 - não localizado
+            res.status(404).json({'erro': erro});
+        } else {
+            res.status(200).json(resultado);
+        }
+    });
 });
 
 app.get('/selecoes/:id', (req,res) => {
-    res.json(buscarSelecaoPorId(req.params.id));
+    const id = req.params.id;
+    const sql = "SELECT * FROM selecoes WHERE id=?;";
+    conexao.query(sql, id, (erro, resultado) => {
+        // primeira posição pois só vai ter um resultado ou nenhum
+        const linha = resultado[0];
+        if(erro) {
+            console.log(erro);
+            //404 - não localizado
+            res.status(404).json({'erro': erro});
+        } else {
+            res.status(200).json(linha);
+        }
+    });
 })
 
 //PUT - atualizações e modificações de já existentes
 app.put('/selecoes/:id', (req, res) => {
-    let index = BuscaIndexSelecao(req.params.id);
-    //o parametro selecao vai ficar no lugar do conteudo da selecao de acordo com o index do array
-    selecoes[index].selecao = req.body.selecao;
-    selecoes[index].grupo = req.body.grupo;
-    res.json(selecoes);
+    const id = req.params.id;
+    const selecao = req.body;
+    const sql = "UPDATE selecoes SET? WHERE id=?;";
+    conexao.query(sql, [selecao, id], (erro, resultado) => {
+        if(erro) {
+            console.log(erro);
+            //400 - requisição não atendida
+            res.status(400).json({'erro': erro});
+        } else {
+            res.status(200).json(resultado);
+        }
+    });
 });
 
 //DELETE - deletar
 app.delete('/selecoes/:id', (req, res) => {
-    let index = BuscaIndexSelecao(req.params.id);
-    selecoes.splice(index, 1);
-    res.send(`seleção com id ${req.params.id} excuida com sucesso`);
+    const id = req.params.id;
+    const sql = "DELETE FROM selecoes WHERE id=?;";
+    conexao.query(sql, id, (erro, resultado) => {
+        if(erro) {
+            console.log(erro);
+            //404 - não localizado
+            res.status(404).json({'erro': erro});
+        } else {
+            res.status(200).json(resultado);
+        }
+    });
 });
 
 //exportando a constante 
